@@ -1,0 +1,6 @@
+{
+  "name": "Endless Car Driving Game",
+  "description": "A high-performance, polished HTML5 endless car driving game with multiple environments, garage customisation, shops, achievements, and dynamic weather.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
