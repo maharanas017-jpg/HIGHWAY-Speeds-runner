@@ -13,6 +13,9 @@ import Achievements, { ACHIEVEMENTS } from './components/Achievements';
 import Leaderboard from './components/Leaderboard';
 import SettingsModal from './components/SettingsModal';
 import GameCanvas from './components/GameCanvas';
+import NativeBannerAd from './components/NativeBannerAd';
+import SocialBarAd from './components/SocialBarAd';
+import AdsterraInterstitial from './components/AdsterraInterstitial';
 
 import { 
   Play, ShoppingCart, ShieldAlert, BookOpen, Volume2, VolumeX, Award,
@@ -140,12 +143,10 @@ export default function App() {
     setRunDistance(finalDist);
     setShowGameOverModal(true);
 
-    // Dynamic 20% chance to trigger a mock Adsterra Interstitial Ad upon crashing!
-    if (Math.random() < 0.6) {
-      setTimeout(() => {
-        setShowInterstitial(true);
-      }, 800);
-    }
+    // Trigger Adsterra Interstitial Ad on every single crash (Game Over) to maximize CPM earnings
+    setTimeout(() => {
+      setShowInterstitial(true);
+    }, 800);
   };
 
   const handleCloseGameOver = () => {
@@ -220,13 +221,15 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 flex flex-col justify-center items-center z-10">
         <AnimatePresence mode="wait">
           {view === 'menu' && (
-            <motion.div
-              key="menu"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center"
-            >
+            <>
+              <SocialBarAd />
+              <motion.div
+                key="menu"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center"
+              >
               {/* Left Column: Visual branding car showcase */}
               <div className="md:col-span-7 bg-slate-900/40 border border-slate-800/80 p-8 rounded-3xl flex flex-col justify-between min-h-[460px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[80px] pointer-events-none"></div>
@@ -357,6 +360,7 @@ export default function App() {
 
               </div>
             </motion.div>
+            </>
           )}
 
           {view === 'levels' && (
@@ -649,6 +653,9 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Display native banner ad in the Garage view as requested */}
+        {view === 'garage' && <NativeBannerAd />}
       </main>
 
       {/* 4. Global Settings Options Modal Trigger Popup */}
@@ -715,50 +722,10 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 6. Fake Adsterra Interstitial Ad Popup (For compliance and fun) */}
+      {/* 6. Adsterra Interstitial Ad Popup on Game Over Screen */}
       <AnimatePresence>
         {showInterstitial && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-5 text-center shadow-2xl relative"
-            >
-              {/* Close Button top-right */}
-              <button
-                onClick={() => { sound.playCoin(); setShowInterstitial(false); }}
-                className="absolute top-3 right-3 p-1 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 cursor-pointer"
-              >
-                ✕ Close Ad
-              </button>
-
-              <span className="text-[8px] bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded font-extrabold font-mono uppercase tracking-wider block w-max mx-auto mb-3">
-                SPONSORED ADSTERRA INTERSTITIAL
-              </span>
-
-              {/* Fake Advertisement details */}
-              <div className="bg-slate-100 p-4 rounded-xl border border-slate-200/60 my-4 flex flex-col items-center gap-2">
-                <span className="text-3xl">🎮</span>
-                <h4 className="text-sm font-bold text-slate-950">Grand Motor Arena Online</h4>
-                <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs">
-                  Download the elite 3D multiplayer mobile racer now for free! Compete live in daily sandbox tournaments.
-                </p>
-                <button 
-                  onClick={() => {
-                    sound.playCoin();
-                    alert('Adsterra: Redirecting to mock installer link!');
-                    setShowInterstitial(false);
-                  }}
-                  className="mt-2 px-5 py-2 bg-blue-600 text-white font-bold text-xs rounded-lg shadow hover:bg-blue-500 cursor-pointer"
-                >
-                  INSTALL FREE APK
-                </button>
-              </div>
-
-              <span className="text-[10px] text-slate-400 block">Close ad to return to the Highway Speedway stats board</span>
-            </motion.div>
-          </div>
+          <AdsterraInterstitial onClose={() => setShowInterstitial(false)} />
         )}
       </AnimatePresence>
 

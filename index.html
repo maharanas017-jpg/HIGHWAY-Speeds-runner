@@ -4,6 +4,59 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>
+    <script>
+      (function() {
+        // Prevent external scripts from bubbling errors to the browser/platform
+        const isExternalError = function(message, url) {
+          if (!url) return true; // cross-origin script error details are hidden
+          const host = window.location.host;
+          const isLocal = url.indexOf(host) !== -1 || url.indexOf('localhost') !== -1 || url.indexOf('127.0.0.1') !== -1;
+          if (!isLocal) return true;
+          if (message && (message.toString().toLowerCase().includes('script error') || message.toString().toLowerCase().includes('uncaught script error'))) {
+            return true;
+          }
+          return false;
+        };
+
+        // Suppress through global window.onerror
+        const originalOnError = window.onerror;
+        window.onerror = function(message, url, line, col, error) {
+          if (isExternalError(message, url)) {
+            console.warn('Silently suppressed external third-party script error:', message);
+            return true; // Suppress error
+          }
+          if (typeof originalOnError === 'function') {
+            return originalOnError(message, url, line, col, error);
+          }
+          return false;
+        };
+
+        // Use standard capture phase listener to intercept and prevent error events from propagation
+        window.addEventListener('error', function(event) {
+          const message = event.message || (event.error && event.error.message);
+          const url = event.filename;
+          if (isExternalError(message, url)) {
+            console.warn('Suppressed error event for third-party script:', message);
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        // Intercept unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          const reason = event.reason;
+          const stackStr = reason && reason.stack ? reason.stack : '';
+          const isLocal = stackStr && (stackStr.indexOf('localhost') !== -1 || stackStr.indexOf('127.0.0.1') !== -1 || stackStr.indexOf(window.location.host) !== -1);
+          if (!isLocal) {
+            console.warn('Suppressed unhandledrejection event for third-party script:', reason);
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
